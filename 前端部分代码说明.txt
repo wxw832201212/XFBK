@@ -1,0 +1,26 @@
+通过Jquery ajax实现对服务端的无感请求，并且对返回结果进行处理，如果code为0则进行页面跳转，并且存储Token用作后续业务请求，
+失败则显示其失败原因
+function login(){
+            console.log("aaa")
+            //登录
+            let studentId = $("#student_id").val();
+            let userName = $("#name").val();
+            
+            $.ajax({
+            url: baseUrl + '/user/login',
+            type: 'post',
+            contentType:"application/json",
+            data: {
+                studentId: studentId,
+                userName: userName
+            },
+            success: function (res) {
+                console.log(res);
+                if(res.code == 0){
+                    token = res.data.token;
+                    window.location.replace("./index.html");
+                }else{
+                    alert("登录失败，原因：" + res.msg);
+                }
+            }
+            });
