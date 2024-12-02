@@ -1,0 +1,87 @@
+使用统一的消息CODE模型，确保前后端消息通信格式一致性，保证程序的健壮性和扩展性，同时前端的错误信息由服务端控制。
+public enum ErrorType {
+    SUCCESS(0,"成功"),
+    SERVER_ERROR(1,"服务器内部错误"),
+    USER_NAME_IS_NULL(2,"用户名不能为空"),
+    USER_STUDENT_IS_NULL(3,"学号不能为空"),
+    USER_NAME_AND_STUDENT_ID_IS_NULL(4,"学号或用户名错误")
+    ;
+
+    private ErrorType(int code, String msg ){
+        this.msg = msg;
+        this.code = code;
+    }
+
+    private String msg;
+    private int code;
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+}
+
+
+-----------------------------------------------------------------
+使用JPA完成对数据库的数据访问
+import com.fast.qaManager.service.core.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+
+@Repository
+public interface UserDao extends JpaRepository<User,Integer> {
+    User findUserByStudentIdAndUserName(String studentId, String userName);
+}
+
+------------------------------------------------------------------
+通过自定义的断言Assert类实现精简的代码进行数据判断，通过自定义的AssertException异常类返回异常信息
+接收到前端传递过来的数据后，对User对象的用户名和学号进行非空判断，验证通过后通过JPA在数据库查找数据
+如果找到记录，则登录成功，通过UUID生成TOKEN，返回给前端。TOKEN机制将确保后续的所有逻辑均能够在用户登录状态进行
+package com.fast.qaManager.service.core.service.impl;
+
+
+import java.util.*;
+
+@Service
+public class UserServiceImpl implements UserService {
+
+    @Autowired
+    private UserDao userDao;
+
+
+    @Override
+    public Response login(User user) {
+        try{
+            Assert.asserts(null != user.getUserName(), ErrorType.USER_NAME_IS_NULL);
+            Assert.asserts(null != user.getStudentId(),ErrorType.USER_STUDENT_IS_NULL);
+
+            User userDb = userDao.findUserByStudentIdAndUserName(user.getStudentId(), user.getUserName());
+            Assert.asserts(null != userDb,ErrorType.USER_NAME_AND_STUDENT_ID_IS_NULL);
+
+            String token = UUID.randomUUID().toString();
+
+            return ResponseUtil.success("user",userDb,"token",token);
+        }catch (AssertException e){
+            return ResponseUtil.error(e.getErrorType());
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseUtil.systemError();
+        }
+    }
+
+}
+
