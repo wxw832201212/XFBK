@@ -8,3 +8,4 @@ import java.util.Map;
 public class LocalBuffer {
     public static Map<String, User> loginUserBuffer = new HashMap<String, User>();
 }
+1
