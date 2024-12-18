@@ -19,6 +19,7 @@ public class LearningPlanCtrl {
     private LearningPlanService learningPlanService;
 
 
+    
     @PostMapping("/addOrUpdateLearningPlan")
     @ResponseBody
     public Response addOrUpdateLearningPlan(@RequestParam("token")String token, @RequestBody String json) {
