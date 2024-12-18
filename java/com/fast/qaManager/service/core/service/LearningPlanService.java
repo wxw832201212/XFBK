@@ -1,6 +1,5 @@
 package com.fast.qaManager.service.core.service;
 
-
 import com.fast.qaManager.service.core.entity.LearningPlan;
 import com.fast.qaManager.service.core.entity.vo.Response;
 
