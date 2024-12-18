@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.TimeZone;
 
+
 @SpringBootApplication
 @ComponentScan(basePackages = {"com.fast.qaManager.service.core.*"})
 @EnableJpaRepositories(basePackages = {"com.fast.qaManager.service.core.dao"})
