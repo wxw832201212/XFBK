@@ -1,0 +1,320 @@
+# 1. Android Studio Specification
+Good tools are prerequisite to the successful execution of a job.
+
+Use the 2022.3.1 Patch 1 Giraffe Edition IDE for development.
+Coding format should be UTF-8.
+After editing .java, .xml, and other files, remember to format them.
+Delete unnecessary imports to reduce warnings. It is recommended to use the Optimize Imports shortcut in Android Studio.
+# 2. Naming Conventions
+Using a combination of Pinyin and English in code names is strictly prohibited, as is using Chinese directly. Correct English spelling and grammar make it easier for readers to understand and avoid ambiguity.
+
+### 2.1 Package Names
+Package names should be all lowercase. Concatenate consecutive words without using underscores. Use the reverse domain name convention and lowercase letters only.
+
+### 2.2 Class Names
+Class names should be written in UpperCamelCase style.
+Class names are usually nouns or noun phrases, while interface names may sometimes be adjectives or adjective phrases.
+For nouns, use the UpperCamelCase naming convention and try to avoid abbreviations unless they are widely known, such as HTML or URL. If a class name includes abbreviations, each letter of the abbreviation should be capitalized.
+
+### 2.3 Method Names
+Method names should be written in lowerCamelCase style.
+Method names are usually verbs or verb phrases.
+
+### 2.4 Constant Names
+Constants should be named using the CONSTANT_CASE pattern, with all letters in uppercase and words separated by underscores. Each constant should be a static final field, but not all static final fields are constants.
+
+# 3. Code Style Guidelines
+### 3.1 Use Standard Brace Style
+Opening braces should be on the same line as the corresponding code, not on a new line.
+```
+class MyClass {
+    int func() {
+        if (something) {
+            // ...
+        } else if (somethingElse) {
+            // ...
+        } else {
+            // ...
+        }
+    }
+}
+```
+
+### 3.2 Order of Class Members
+Using a consistent order improves code readability. The following order should be used for this project:
+
+1.Constants
+2.Fields
+3.Constructors
+4.Overridden methods and callbacks
+5.Public methods
+6.Private methods
+7.Inner classes or interfaces
+```
+public class MainActivity extends Activity {
+    private static final String TAG = MainActivity.class.getSimpleName();
+    private String mTitle;
+    private TextView mTextViewTitle;
+    @Override
+    public void onCreate() {
+    }
+    public void setTitle(String title) {
+    }
+    private void setUpView() {
+    }
+    static class AnInnerClass {
+    }
+}
+```
+### 3.3 Ordering of Function Parameters
+In Android development, it is common to have Context as the first parameter in function signatures. On the other hand, callback interfaces should be the last parameter.
+```
+// Context always goes first
+public User loadUser(Context context, int userId);
+ 
+// Callbacks always go last
+public void loadUserAsync(Context context, int userId, UserCallback callback);
+```
+### 3.4 Naming and Values of String Constants
+Many classes in the Android SDK use key-value pairs, such as SharedPreferences, Bundle, and Intent. Thus, even for small applications, a large number of string constants need to be defined. When using these classes, the keys must be defined as static final fields and follow the following guidelines as prefixes.
+
+### 3.5 Passing Data Between Activities and Fragments
+When passing data via Intent or Bundle between activities or fragments, the keys for different values should follow the guidelines mentioned above.
+If an activity or fragment requires parameters for its initialization, it should provide a public static function to assist with starting or creating it.
+# 4. Resource File Conventions
+### 4.1 Color Resource Files (color/)
+This directory is specifically used to store color-related resource files.
+Naming convention: type_logicalName.
+For example: sel_btn_font.xml.
+Colors can also be placed in the res/drawable/ directory, and referenced using @drawable, but this is not recommended. It is better to keep them separate.
+
+### 4.2 Image Resource Files (drawable/ and mipmap/)
+The res/drawable/ directory is used for bitmap files (.png, .9,.png, .jpg, .gif) or XML files compiled as drawable resources. The res/mipmap/ directory is used for launcher icons of different densities. Therefore, res/mipmap/ should only be used for launcher icons, while other image resources should be placed in the res/drawable/ directory.
+Naming convention: type{_moduleName}_logicalName, type{_moduleName}_color.
+Note: The content within {} is optional; type can be a drawable resource type or a widget type (see the UI Control Abbreviation table in the appendix). The suffix _small indicates a small image, while _big indicates a large image.
+
+### 4.3 Layout Resource Files (layout/)
+Naming convention: type_moduleName, type{_moduleName}_logicalName.
+Note: The content within {} is optional.
+
+### 4.4 values Resource Files (values/)
+Files in the values/ resource directory should end with "s", such as attrs.xml, colors.xml, dimens.xml. The file name itself is not important; what matters are the various tags under the tag. For example, < style > determines the style, and < color > determines the color. Therefore, a large XML file can be split into multiple smaller files, such as styles.xml, styles_home.xml, styles_item_details.xml, styles_forms.xml.
+
+# 5. Commenting Guidelines
+To make it easier for others to read your code, it is recommended to include comments in key places.
+
+### 5.1 Class Comments
+After completing each class, there should be a comment containing the author's name and contact information.
+```
+/**
+ * <pre>
+ *     author : Blankj
+ *     e-mail : xxx@xx
+ *     time   : 2023/11/21
+ *     desc   : xxxx description
+ *     version: 1.0
+ * </pre>
+ */
+public class WelcomeActivity {
+    ...
+}
+```
+### 5.2 Method Comments
+Each member method (including custom member methods, overridden methods, and getter/setter methods) should have a method comment at the beginning of the method. You can input /** + Enter or set a shortcut for Fix doc comment (Settings -> Keymap -> Fix doc comment), and AS will generate a template for you. You just need to complete the parameters.
+
+# Back-end Code Specification
+
+## 1. Hierarchical Specification
+#### 1.1 Code structure layer
+Open interface layer : the service method can be directly encapsulated and exposed to RPC interface ; encapsulated into http interface through the Web ; gateway control layer, etc.
+
+Controller layer : mainly to forward access control, check various basic parameters, or simple processing of non-reused services.
+
+Service layer : relatively specific business logic service layer.
+DAO layer : data access layer, data interaction with the underlying MySQL, Oracle, Hbase, OB, etc.
+
+External interfaces or third-party platforms : including RPC open interfaces of other departments, basic platforms, HTTP interfaces of other companies.
+
+#### 1.2 Engineering Structure:
+Controller : Front-end control layer Controller.
+Service : Data service interface layer Service.
+Manager : General business processing layer Manager.
+service.impl : Data service interface implementation layer Service Implements.
+Config : Configure class directory.
+Util : Tool class directory.
+Mapper ( Dao ) : dao layer directorDy, if it is MyBatis project can use mapper.
+
+## 2. Naming Specifications
+#### 2.1 Package name
+Package names are all lowercase, continuous words are simply connected, without underlined, using anti-domain name naming rules, all using lowercase letters.
+
+#### 2.2 Class name
+Class names are written in UpperCamelCase style.
+Class names are usually nouns or noun phrases, and interface names may sometimes be adjectives or adjective phrases.
+Nouns, using the large hump naming method, try to avoid abbreviations, unless the abbreviation is well known, such as HTML, URL, if the class name contains word abbreviations, each letter of the word abbreviation should be capitalized.
+
+#### 2.3 Method name
+Method names are all written in the lowerCamelCase style. The method name is usually a verb or a verb phrase.
+
+#### 2.4 Constant name
+Constant name naming mode is CONSTANT _ CASE, all letters capital, word separated by underscore. Each constant is a static final field, but not all the static final fields are constant.
+# 3. Code Style Specification
+#### 3.1 Use the standard braces style
+The left bracket does not occupy a single line and is in the same line as the previous code:
+
+For example :
+```
+public class Post {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+    private int user_name;
+    private String content;
+    private Time timestamp;
+ 
+    public int getId() {
+        return id;
+    }
+ 
+    public void setId(int id) {
+        this.id = id;
+    }
+ 
+    public int getUser_name() {
+        return user_name;
+    }
+ 
+    public void setUser_name(int user_name) {
+        this.user_name = user_name;
+    }
+ 
+    public String getContent() {
+        return content;
+    }
+ 
+    public void setContent(String content) {
+        this.content = content;
+    }
+ 
+    public Time getTimestamp() {
+        return timestamp;
+    }
+ 
+    public void setTimestamp(Time timestamp) {
+        this.timestamp = timestamp;
+    }
+}
+```
+### 3.2 The order of the class members
+Using a consistent order will improve the readability of the code. This project uses the following order :
+
+Constant
+field
+constructor function
+Rewrite functions and callbacks
+Public function
+Private function
+Internal class or interface
+
+For example :
+```
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+    private String username;
+    private String password;
+    private String headPortraitBase64Code;
+    private int age;
+    private String gender;
+    private String nickName;
+    private  String userIdiograph;
+ 
+    public String getUserIdiograph() {
+        return userIdiograph;
+    }
+ 
+    public String getUsername() {
+        return username;
+    }
+ 
+    public String getGender() {
+        return gender;
+    }
+ 
+    public void setSex(String sex) {
+        gender = gender;
+    }
+ 
+    public String getNickName() {
+        return nickName;
+    }
+ 
+    public void setNickName(String nickName) {
+        this.nickName = nickName;
+    }
+ 
+    public int getAge() {
+        return age;
+    }
+ 
+    public void setAge(int age) {
+        this.age = age;
+    }
+ 
+    public Integer getId() {
+        return id;
+    }
+ 
+    public String getHeadPortraitBase64Code() {
+        return headPortraitBase64Code;
+    }
+ 
+    public void setHeadPortraitBase64Code(String headPortraitBase64Code) {
+        this.headPortraitBase64Code = headPortraitBase64Code;
+    }
+ 
+    public void setId(int id) {
+        this.id = id;
+    }
+ 
+    public String getPassword() {
+        return password;
+    }
+ 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+ 
+    public void setUsername(String username) {
+        this.username = username;
+    }
+// getters and setters
+}
+```
+#### 3.3 Name and value of the string constant
+When using key-value pair functions in Android development, a large number of string constants need to be defined as keys. These constants are usually used as static fields of the class to ensure its uniqueness and reusability. In order to reduce the confusion of keyname definitions and improve the readability of the code, follow some guidelines and best practices to manage these constants.
+Prefix naming convention : Define a unified prefix in order to classify and identify it.
+
+For example :
+
+1.KEY _ : Keys for SharedPreferences
+2.EXTRA _ : Additional data for Intent
+3.ARG _ : A key for passing parameters between Fragments
+4.BUNDLE _ : Key for Bundle
+
+
+## 4. SQL Writing Specification
+#### 4.1 Naming Specification:
+Table name and column name : Use clear and descriptive names, avoid using reserved words or special characters, and use underlined or hump naming methods.
+Table name prefix : If necessary, use the table name prefix to distinguish the module or type to which the table belongs,
+for example : user _ table.
+Alias : Use easy-to-understand aliases to simplify the readability of SQL statements.
+#### 4.2 Format and Layout:
+Indentation and line-changing : Appropriate indenting and line-changing are performed after keywords, subqueries, comma-separated columns, and operators to improve readability.
+Alignment : Align related elements, such as column names in SELECT clauses or conditions in JOIN statements.
+Spaces : Use spaces around SQL keywords and operators to make statements clearer and easier to read.
+#### 4.3 Query statement specification:
+Use wildcards : Use wildcards only when necessary ( such as SELECT * ), and it is best to explicitly list the required columns.
+Avoid nested queries : minimize nested queries and use methods such as JOIN to merge queries to improve performance and readability.
+Parametric query : For dynamically constructed SQL statements, parametric query is used to avoid SQL injection attacks.
