@@ -10,3 +10,4 @@ import java.util.List;
 public interface InnerMessageDao extends JpaRepository<InnerMessage,Integer> {
     List<InnerMessage> findInnerMessagesByUserIdAndType(Integer userId,Integer type);
 }
+
