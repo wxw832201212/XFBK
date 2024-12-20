@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小福备考 - 实时互动问答</title>
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/all.min.css">
+    <script src="./js/jquery-1.8.3.min.js"></script>
+    <script src="./js/comm.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .navbar {
+            background-color: #007bff;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .right-nav {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 1rem;
+        }
+
+        .right-nav a {
+            color: white;
+            margin-left: 1rem;
+            text-decoration: none;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .current-topic {
+            border: 1px solid #007bff;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            background-color: #e9f5ff;
+        }
+
+        .chat-window {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            background-color: #ffffff;
+        }
+
+        .chat-message {
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .timestamp {
+            color: #6c757d;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #343a40;
+            color: #f8f9fa;
+        }
+
+        .popular-questions {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 2rem;
+            background-color: #fdfdfd;
+        }
+
+        .popular-questions h4 {
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .popular-question {
+            margin-bottom: 1rem;
+        }
+
+        .popular-question strong {
+            font-size: 1.1rem;
+        }
+
+        .search-input {
+            margin-bottom: 1rem;
+        }
+
+        .no-results {
+            font-size: 1rem;
+            color: #dc3545;
+        }
+
+        .currentTopicLi {
+            cursor: pointer;
+        }
+
+        .currentTopicLi:hover {
+            color: #007bff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 顶部导航栏 -->
+    <div class="navbar">
+        <span style="cursor: pointer;" onclick="javascript:window.location.replace('./index.html');">小福备考 -
+            高效学习伙伴</span>
+        <div class="right-nav">
+            <a href="./login.html"><i class="fas fa-sign-in-alt"></i> 登录</a>
+            <a href="javascript:;" onclick="toInnerMessage()" target="_blank"><i class="fas fa-envelope"></i> 通知</a>
+            <a href="#help" target="_blank"><i class="fas fa-question-circle"></i> 帮助</a>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <main class="col-md-12 content">
+                <h2 class="mb-4">实时互动问答</h2>
+
+                <!-- 当前讨论的题目 -->
+                <div class="current-topic" id="currentTopic">
+                    <h4>当前讨论的题目：</h4>
+                    <ul id="topicList"></ul>
+                </div>
+
+                <!-- 显示聊天窗口 -->
+                <div class="chat-window" id="chatWindow"></div>
+
+                <div class="input-group mb-3">
+                    <input type="text" id="messageInput" class="form-control" placeholder="输入你的答案...">
+                    <button class="btn btn-primary" onclick="sendMessage()">发送</button>
+                </div>
+
+                <div class="input-group mb-3">
+                    <input type="text" id="addProblemBox" class="form-control" placeholder="输入你的问题...">
+                    <button class="btn btn-primary" onclick="addProblem()">新建问题</button>
+                </div>
+
+                <!-- 热门问答推送 -->
+                <div class="popular-questions" id="popularQuestions">
+                    <h4><i class="fas fa-fire"></i> 热门问答推送</h4>
+
+                    <!-- 搜索问题 -->
+                    <div class="input-group search-input">
+                        <input type="text" id="searchInput" class="form-control" placeholder="搜索热门问题...">
+                        <button class="btn btn-secondary" onclick="searchQuestions()">搜索</button>
+                    </div>
+
+                    <!-- 搜索结果 -->
+                    <div id="searchResults" style="display: none;"></div>
+
+                    <!-- 热门问题列表 -->
+                    <div id="popularQuestionsList"></div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <div class="footer">
+        © 2024 小福备考. 版权所有.
+    </div>
+
+    <script>
+        var messages = [];
+        var popularQuestions = [];
+        var currentTopic = [];
+        var selectProblemId = null;
+
+        // Display current topic
+        function displayCurrentTopic(topics) {
+            const topicList = document.getElementById("topicList");
+            topicList.innerHTML = ""; // Clear previous topics
+
+
+            topics.forEach(topic => {
+                const listItem = document.createElement("li");
+                listItem.textContent = topic.topic;
+                $(listItem).attr("class", "currentTopicLi");
+                $(listItem).attr("onclick", "toChat(" + topic.id + ")");
+                topicList.appendChild(listItem);
+            });
+        }
+
+        function toChat(problemId) {
+            $.ajax({
+                url: baseUrl + '/message/getMessage?token=' + sessionStorage.getItem("token") + "&problemId=" + problemId,
+                type: 'get',
+                contentType: "application/json",
+                success: function (res) {
+                    console.log(res);
+                    if (res.code == 0) {
+                        messages = res.data.messages;
+                        selectProblemId = problemId;
+                        loadMessages(res.data.messages);
+                    } else {
+                        alert("数据获取失败，原因：" + res.msg);
+                    }
+                }
+            });
+        }
+
+        // Display popular questions
+        function displayPopularQuestions(questions) {
+            const popularQuestionsList = document.getElementById("popularQuestionsList");
+            popularQuestionsList.innerHTML = ""; // Clear previous list
+
+            questions.forEach(q => {
+                const questionElement = document.createElement("div");
+                questionElement.classList.add("popular-question");
+                questionElement.innerHTML = `<strong>${q.topic}</strong><br><span>浏览次数: ${q.browseCount}</span>`;
+                popularQuestionsList.appendChild(questionElement);
+
+                currentTopic.push(q.topic);
+            });
+        }
+
+        // Search popular questions
+        function searchQuestions() {
+            const searchInput = document.getElementById("searchInput").value.toLowerCase();
+            const searchResults = document.getElementById("searchResults");
+            const filteredQuestions = popularQuestions.filter(q =>
+                q.topic.toLowerCase().includes(searchInput)
+            );
+
+            if (searchInput) {
+                if (filteredQuestions.length > 0) {
+                    searchResults.style.display = "none"; // Hide "no results" message
+                    displayPopularQuestions(filteredQuestions);
+                } else {
+                    searchResults.style.display = "block";
+                    searchResults.innerHTML = `<p class="no-results">未找到匹配的结果。</p>`;
+                    displayPopularQuestions([]); // Clear results
+                }
+            } else {
+                searchResults.style.display = "none"; // Hide "no results" message
+                displayPopularQuestions(); // Show all questions
+            }
+        }
+
+        function toInnerMessage() {
+            window.location.replace("./message.html");
+        }
+        function addProblem() {
+            let topic = $("#addProblemBox").val();
+            $.ajax({
+                url: baseUrl + '/problem/addProblem?token=' + sessionStorage.getItem("token") + "&topic=" + topic,
+                type: 'get',
+                contentType: "application/json",
+                success: function (res) {
+                    console.log(res);
+                    if (res.code == 0) {
+                        popularQuestions.push(res.data.problem);
+                        displayPopularQuestions(popularQuestions);
+                        displayCurrentTopic(popularQuestions);
+                        $("#addProblemBox").val("");
+                    } else {
+                        alert("数据获取失败，原因：" + res.msg);
+                    }
+                }
+            });
+        }
+
+        // Send message
+        function sendMessage() {
+            const messageInput = document.getElementById("messageInput");
+            const messageText = messageInput.value;
+
+            $.ajax({
+                url: baseUrl + '/message/sendMessage?token=' + sessionStorage.getItem("token") + "&problemId=" + selectProblemId + "&content=" + messageText,
+                type: 'get',
+                contentType: "application/json",
+                success: function (res) {
+                    console.log(res);
+                    if (res.code == 0) {
+                        messages.push(res.data.message);
+                        loadMessages(messages);
+                        $("#messageInput").val("");
+                    } else {
+                        alert("发送失败，原因：" + res.msg);
+                    }
+                }
+            });
+        }
+
+        function loadMessages(messageList) {
+
+            const chatWindow = document.getElementById("chatWindow");
+            chatWindow.innerHTML = "";
+            messageList.forEach(message => {
+
+                const messageElement = document.createElement("div");
+
+                messageElement.classList.add("chat-message");
+                messageElement.innerHTML = `<strong>${message.userName}:</strong> ${message.content} <span class="timestamp">${message.sendTime}</span>`;
+
+                chatWindow.appendChild(messageElement);
+            });
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        // Display message in chat window
+        function displayMessage(message) {
+            const chatWindow = document.getElementById("chatWindow");
+            const messageElement = document.createElement("div");
+
+            messageElement.classList.add("chat-message");
+            messageElement.innerHTML = `<strong>${message.user}:</strong> ${message.text} <span class="timestamp">${message.time}</span>`;
+
+            chatWindow.appendChild(messageElement);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        // Initialize the page
+        document.addEventListener("DOMContentLoaded", function () {
+
+            $.ajax({
+                url: baseUrl + '/problem/list?token=' + sessionStorage.getItem("token"),
+                type: 'get',
+                contentType: "application/json",
+                success: function (res) {
+                    console.log(res);
+                    if (res.code == 0) {
+                        popularQuestions = res.data.problems;
+                        displayPopularQuestions(res.data.problems);
+                        displayCurrentTopic(res.data.problems);
+                    } else {
+                        alert("数据获取失败，原因：" + res.msg);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

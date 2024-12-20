@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学习计划生成</title>
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/all.min.css">
+     <script src="./js/jquery-1.8.3.min.js"></script>
+    <script src="./js/comm.js"></script>
+    <style>
+        /* 顶部导航栏 */
+        .navbar {
+            background-color: #007bff;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .right-nav {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 1rem;
+        }
+
+        .right-nav a {
+            color: white;
+            margin-left: 1rem;
+            text-decoration: none;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 800px;
+        }
+
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            font-size: 1.75rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+        }
+
+        .form-section {
+            margin-top: 2rem;
+        }
+
+        .form-section h2 {
+            font-size: 1.5rem;
+            color: #007bff;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary,
+        .btn-success {
+            width: 100%;
+            font-weight: bold;
+        }
+
+        .list-group-item {
+            border: 1px solid #e9ecef;
+            padding: 0.75rem;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #dateTimeDisplay {
+            font-size: 1rem;
+            color: #6c757d;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="navbar">
+        <span style="cursor: pointer;" onclick="javascript:window.location.replace('./index.html');">小福备考 -
+            高效学习伙伴</span>
+        <div class="right-nav">
+            <a href="./login.html"><i class="fas fa-sign-in-alt"></i> 登录</a>
+            <a href="javascript:;" onclick="toInnerMessage()" target="_blank"><i class="fas fa-envelope"></i> 通知</a>
+            <a href="#help" target="_blank"><i class="fas fa-question-circle"></i> 帮助</a>
+        </div>
+    </div>
+    <div style="text-align: center;  width: 800px;  position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);">
+        <div class="container">
+            <!-- Header -->
+            <div class="header">学习计划生成</div>
+
+            <!-- 学习计划生成 -->
+            <div class="card form-section">
+                <h2><i class="fas fa-clipboard-check"></i> 生成学习计划</h2>
+                <form id="learningPlanForm">
+                    <div class="mb-3">
+                        <label for="planName" class="form-label">计划名称</label>
+                        <input type="text" class="form-control" id="planName" placeholder="请输入计划名称" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="studyHours" class="form-label">每周学习时间 (小时)</label>
+                        <input type="number" class="form-control" id="studyHours" placeholder="请输入学习时间" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="studyMethod" class="form-label">学习方式</label>
+                        <input type="text" class="form-control" id="studyMethod" placeholder="请输入学习方式" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="goals" class="form-label">学习目标</label>
+                        <textarea class="form-control" id="goals" rows="3" placeholder="请输入学习目标" required></textarea>
+                    </div>
+                    <button type="submit" onclick="buildPlan()" class="btn btn-primary">生成学习计划</button>
+                </form>
+                <div id="learningPlan" class="mt-4"></div>
+            </div>
+
+
+            <!-- 实时日期和时间显示 -->
+            <div id="dateTimeDisplay" class="mt-4"></div>
+        </div>
+    </div>
+
+
+    <script>
+
+        function getQueryString(name) {
+            var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) {
+                return unescape(r[2]);
+            }
+            return null;
+        }
+        $(function () {
+            let id = getQueryString("id");
+            if (id != "") {
+                //查询
+                $.ajax({
+                    url: baseUrl + '/learningPlan/getLearningPlanById?token=' + sessionStorage.getItem("token") + '&id=' + id,
+                    type: 'get',
+                    contentType: "application/json",
+                    success: function (res) {
+                        console.log(res);
+                        if (res.code == 0) {
+                            document.getElementById('planName').value = res.data.learningPlan.name;
+                            document.getElementById('studyHours').value = res.data.learningPlan.hour;
+                            document.getElementById('studyMethod').value = res.data.learningPlan.type;
+                            document.getElementById('goals').value = res.data.learningPlan.target;
+                        } else {
+                            alert("获取失败，原因：" + res.msg);
+                        }
+                    }
+                });
+            }
+        })
+        const groups = []; // 存储创建的小组
+
+        // 实时日期和时间更新
+        function updateDateTime() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            document.getElementById('dateTimeDisplay').textContent = `当前时间：${now.toLocaleString('zh-CN', options)}`;
+        }
+
+        setInterval(updateDateTime, 1000); // 每秒更新一次
+
+        // 学习计划生成逻辑
+
+
+        function buildPlan() {
+            const planName = document.getElementById('planName').value;
+            const studyHours = document.getElementById('studyHours').value;
+            const studyMethod = document.getElementById('studyMethod').value;
+            const goals = document.getElementById('goals').value;
+
+            $.ajax({
+                url: baseUrl + '/learningPlan/addOrUpdateLearningPlan?token=' + sessionStorage.getItem("token"),
+                type: 'post',
+                contentType: "application/json",
+                data: {
+                    name: planName,
+                    type: studyMethod,
+                    target: goals,
+                    hour: studyHours
+                },
+                success: function (res) {
+                    console.log(res);
+                    if (res.code == 0) {
+
+                        const learningPlan = `
+                        <h5>${planName}</h5>
+                        <p><strong>每周学习时间:</strong> ${studyHours} 小时</p>
+                        <p><strong>学习方式:</strong> ${studyMethod}</p>
+                        <p><strong>学习目标:</strong> ${goals}</p>
+                    `;
+
+                        document.getElementById('learningPlan').innerHTML = learningPlan;
+                        this.reset(); // 清空表单
+
+                        alert("生成成功");
+                    } else {
+                        alert("生成失败，原因：" + res.msg);
+                    }
+                }
+            });
+        }
+
+        document.getElementById('learningPlanForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const planName = document.getElementById('planName').value;
+            const studyHours = document.getElementById('studyHours').value;
+            const studyMethod = document.getElementById('studyMethod').value;
+            const goals = document.getElementById('goals').value;
+
+            const learningPlan = `
+                <h5>${planName}</h5>
+                <p><strong>每周学习时间:</strong> ${studyHours} 小时</p>
+                <p><strong>学习方式:</strong> ${studyMethod}</p>
+                <p><strong>学习目标:</strong> ${goals}</p>
+            `;
+
+            document.getElementById('learningPlan').innerHTML = learningPlan;
+            this.reset(); // 清空表单
+        });
+
+
+        function toInnerMessage() {
+            window.location.replace("./message.html");
+        }
+
+
+        updateDateTime(); // 页面加载时立即显示一次
+    </script>
+   
+</body>
+
+</html>

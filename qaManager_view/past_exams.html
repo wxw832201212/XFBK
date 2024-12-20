@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小福备考 - 试卷检索</title>
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/all.min.css">
+    <script src="./js/jquery-1.8.3.min.js"></script>
+    <script src="./js/comm.js"></script>
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            background-color: #007bff;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            position: relative;
+        }
+        .right-nav {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 1rem;
+        }
+        .right-nav a {
+            color: white;
+            margin-left: 1rem;
+            text-decoration: none;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            background-color: #e9ecef;
+            padding: 1rem;
+            height: 100vh;
+        }
+        .sidebar h6 {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .sidebar a {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .sidebar a i {
+            margin-right: 8px;
+        }
+
+        /* 主内容区 */
+        .content {
+            padding: 2rem;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: 0.3s;
+        }
+        .card:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .card-title {
+            font-weight: bold;
+        }
+        .card-text {
+            font-size: 0.95rem;
+            color: #6c757d;
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #343a40;
+            color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 顶部导航栏 -->
+    <div class="navbar">
+        <span style="cursor: pointer;" onclick="javascript:window.location.replace('./index.html');">小福备考 - 高效学习伙伴</span>
+        <div class="right-nav">
+            <a href="./login.html"><i class="fas fa-sign-in-alt"></i> 登录</a>
+            <a href="javascript:;" onclick="toInnerMessage()" target="_blank"><i class="fas fa-envelope"></i> 通知</a>
+            <a href="#help" target="_blank"><i class="fas fa-question-circle"></i> 帮助</a>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 左侧导航栏 -->
+            <nav class="col-md-3 col-lg-2 sidebar">
+                <h6>快速访问</h6>
+                <a href="./past_exams.html"><i class="fas fa-file-alt"></i> 试卷检索</a>
+                <a href="personalized_plan.html"><i class="fas fa-calendar-alt"></i> 个性化学习计划</a>
+                <a href="community.html"><i class="fas fa-comments"></i> 实时互动问答</a>
+                <a href="settings.html"><i class="fas fa-cog"></i> 个人设置</a>
+            </nav>
+
+            <!-- 主要内容区 -->
+            <main class="col-md-9 col-lg-10 content">
+                <h2 class="mb-4">试卷检索</h2>
+                <p>通过年份、科目和主题快速找到所需试卷，支持在线预览和一键下载</p>
+                
+                <!-- 功能模块展示卡片 -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <input id="title" onkeydown="keyDown(event)" type="text" class="form-control" placeholder="搜索试卷...">
+                    </div>
+                    <div class="col-md-3">
+                        <select id="subject" onchange="subjectChange()" class="form-select" aria-label="科目">
+                            <option value="所有科目" selected>所有科目</option>
+                            <option value="高等数学">高等数学</option>
+                            <option value="大学物理">大学物理</option>
+                            <!-- 其他科目 -->
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select id="year" onchange="subjectChange()" class="form-select" aria-label="年份">
+                            <option value="所有年份" selected>所有年份</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                            <option value="2022">2022</option>
+                            <option value="2021">2021</option>
+                            <option value="2020">2020</option>
+                            <!-- 其他年份 -->
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div id="listBox" class="list-group" style=" max-height: 60vh; overflow-y: auto;">
+                          
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <div class="footer">
+        © 2024 小福备考. 版权所有.
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</body>
+
+<script>
+
+    function keyDown(e){
+        if(e.keyCode == 13){
+            listByParams();
+        }
+    }
+
+    function listByParams(){
+        let title = $("#title").val();
+        let subject = $("#subject").val();
+        let year = $("#year").val();
+        
+        if(title == "" || title == null || title == undefined){
+            title="^all"
+        }
+        $.ajax({
+            url: baseUrl + '/paper/listByParams?token=' + sessionStorage.getItem("token"),
+            type: 'post',
+            contentType:"application/json",
+            data: {
+                title: title,
+                subject: subject,
+                releaseYear:year
+            },
+            success: function (res) {
+                console.log(res);
+                if(res.code == 0){
+                    $("#listBox").html("");
+                    builView(res.data.papers);
+                }else{
+                    alert("登录失败，原因：" + res.msg);
+                }
+            }
+            });
+
+    }
+
+    function subjectChange(){
+        listByParams();
+    }
+
+    function download(paperId){
+        var xhr = new XMLHttpRequest();
+    xhr.open("get", baseUrl + '/paper/download?token=' + sessionStorage.getItem("token") + "&paperId=" + paperId, true);
+    xhr.responseType = "blob";
+    xhr.onreadystatechange = () => {
+        if(xhr.readyState == 4 && xhr.status == 200) {
+            let contentType = xhr.getResponseHeader("content-type");
+            let blob = new Blob([xhr.response]);
+            if(contentType.includes("application/json")) {
+                blob.text().then(text => {
+                    let json = JSON.parse(text);
+                });
+            } else {
+                let disposition = xhr.getResponseHeader("content-disposition");
+                let fileName = "试卷.pdf";
+               
+                let url = window.URL.createObjectURL(blob);
+                let a = document.createElement("a");
+                a.href = url;
+                a.download = fileName;
+                a.click();
+                window.URL.revokeObjectURL(url);
+            }
+        }
+    }
+    xhr.send();
+    }
+
+    function builView(papers){
+        for(const index in papers){
+                        let a = document.createElement("a");
+                        $(a).attr("href","#");
+                        $(a).attr("class","list-group-item list-group-item-action flex-column align-items-start mb-3");
+
+                        let div = document.createElement("div");
+                        $(div).attr("class","d-flex w-100 justify-content-between");
+                        
+                        let h5 = document.createElement("h5");
+                        $(h5).attr("class","mb-1");
+                        $(h5).html(papers[index].title);
+                        
+                        let small = document.createElement("small");
+                        $(small).html(papers[index].releaseYear);
+
+                        $(div).append(h5);
+                        $(div).append(small);
+
+                        $(a).append(div);
+
+                        let p = document.createElement("p");
+                        $(p).attr("class","mb-1");
+                        $(p).html(papers[index].desc);
+                        $(a).append(p);
+
+                        let smallTitle = document.createElement("small");
+                        $(smallTitle).html("点击预览或下载");
+                        $(a).append(smallTitle);
+
+                        
+                        let viewButton = document.createElement("button");
+                        $(viewButton).attr("class","btn btn-primary");
+                        $(viewButton).attr("onclick","javascript:window.open('"  + papers[index].viewPath + "')");
+                        $(viewButton).html("预览");
+                        $(a).append(viewButton);
+
+                        let downloadButton = document.createElement("button");
+                        $(downloadButton).attr("class","btn btn-secondary");
+                        $(downloadButton).html("下载")
+                        $(downloadButton).attr("onclick","javascript:download(" + papers[index].id + ");");
+                        $(a).append(downloadButton);
+                        
+                        $("#listBox").append(a);
+                    }
+    }
+
+    $(function(){
+        //加载全部试卷数据并构建VIEW
+
+        $.ajax({
+            url: baseUrl + '/paper/list?token=' + sessionStorage.getItem("token"),
+            type: 'get',
+            contentType:"application/json",
+            success: function (res) {
+                console.log(res);
+                if(res.code == 0){
+                    builView(res.data.papers);
+
+                }else{
+                    alert("数据获取失败，原因：" + res.msg);
+                }
+            }
+            });
+    })
+    function toInnerMessage(){
+            window.location.replace("./message.html");
+        }
+</script>
+</html>

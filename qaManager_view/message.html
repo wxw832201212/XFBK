@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通知中心</title>
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="./js/jquery-1.8.3.min.js"></script>
+    <script src="./js/comm.js"></script>
+    <style>
+        /* 顶部导航栏 */
+        .navbar {
+            background-color: #007bff;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .right-nav {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 1rem;
+        }
+
+        .right-nav a {
+            color: white;
+            margin-left: 1rem;
+            text-decoration: none;
+        }
+
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 800px;
+        }
+
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            font-size: 1.75rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .notification-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .list-group-item {
+            border: 1px solid #e9ecef;
+            padding: 1rem;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge-new {
+            background-color: #28a745;
+            color: white;
+            font-size: 0.85rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="navbar">
+        <span style="cursor: pointer;" onclick="javascript:window.location.replace('./index.html');">小福备考 -
+            高效学习伙伴</span>
+        <div class="right-nav">
+            <a href="./login.html"><i class="fas fa-sign-in-alt"></i> 登录</a>
+            <a href="javascript:;" onclick="toInnerMessage()" target="_blank"><i class="fas fa-envelope"></i> 通知</a>
+            <a href="#help" target="_blank"><i class="fas fa-question-circle"></i> 帮助</a>
+        </div>
+    </div>
+    <div style="display:grid;place-items:center;">
+        <div class="container" style="width:800px" >
+            <!-- Header -->
+            <div class="header">通知中心</div>
+
+            <!-- 学习计划通知 -->
+            <div class="card">
+                <div class="notification-title"><i class="fas fa-clipboard"></i> 学习计划通知</div>
+                <ul class="list-group list-unstyled mt-3" id="learningPlanNotifications">
+                    <!-- 动态添加学习计划通知内容 -->
+                </ul>
+            </div>
+
+            <!-- 问答通知 -->
+            <div class="card">
+                <div class="notification-title"><i class="fas fa-comments"></i> 问答通知</div>
+                <ul class="list-group list-unstyled mt-3" id="qaNotifications">
+                    <!-- 动态添加问答通知内容 -->
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 假设有一些通知数据，实际情况可以从服务器端获取
+        const learningPlanNotifications = [
+            { title: "学习计划已更新", description: "您的学习计划已调整，请查看最新进度。", isNew: true },
+            { title: "本周复习提醒", description: "别忘了完成每周复习任务！", isNew: false },
+        ];
+
+        const qaNotifications = [
+            { title: "问题已收到回答", description: "您的问题‘如何高效记忆单词’有了新的回答。", isNew: true },
+
+        ];
+
+        // 渲染学习计划通知
+        function renderLearningPlanNotifications(learningPlanNotificationList) {
+            const container = document.getElementById('learningPlanNotifications');
+            container.innerHTML = ''; // 清空旧内容
+
+            learningPlanNotificationList.forEach(notification => {
+                const listItem = document.createElement('li');
+                listItem.className = 'list-group-item';
+
+                const content = document.createElement('div');
+                content.innerHTML = `<strong>${notification.title}</strong><br>${notification.content}`;
+
+                listItem.appendChild(content);
+
+                // 如果是新通知，显示“新”徽章
+                // if (notification.isNew) {
+                const badge = document.createElement('span');
+                badge.className = 'badge badge-new';
+                badge.textContent = '新';
+                listItem.appendChild(badge);
+                // }
+                $(listItem).attr("onclick", "toPersonalizedPlan(" + notification.id + ")");
+                container.appendChild(listItem);
+            });
+        }
+
+        function toPersonalizedPlan(id) {
+            //跳转学习计划
+            window.location.replace("personalized_plan.html?id=" + id);
+        }
+
+        // 渲染问答通知
+        function renderQANotifications(innerMessages) {
+            const container = document.getElementById('qaNotifications');
+            container.innerHTML = ''; // 清空旧内容
+
+            innerMessages.forEach(notification => {
+                const listItem = document.createElement('li');
+                listItem.className = 'list-group-item';
+
+                const content = document.createElement('div');
+                content.innerHTML = `<strong>${notification.title}</strong><br>${notification.content}`;
+
+                listItem.appendChild(content);
+
+                // // 如果是新通知，显示“新”徽章
+                // if (notification.isNew) {
+                //     const badge = document.createElement('span');
+                //     badge.className = 'badge badge-new';
+                //     badge.textContent = '新';
+                //     listItem.appendChild(badge);
+                // }
+
+                container.appendChild(listItem);
+            });
+        }
+
+        // 页面加载时渲染通知
+        document.addEventListener('DOMContentLoaded', function () {
+
+            $.ajax({
+                url: baseUrl + '/innerMessage/getInnerMessage?token=' + sessionStorage.getItem("token") + "&type=0",
+                type: 'get',
+                contentType: "application/json",
+                success: function (res) {
+                    console.log(res);
+                    if (res.code == 0) {
+                        renderQANotifications(res.data.innerMessages);
+                    } else {
+                        alert("数据获取失败，原因：" + res.msg);
+                    }
+                }
+            });
+
+            $.ajax({
+                url: baseUrl + '/innerMessage/getInnerMessage?token=' + sessionStorage.getItem("token") + "&type=1",
+                type: 'get',
+                contentType: "application/json",
+                success: function (res) {
+                    console.log(res);
+                    if (res.code == 0) {
+                        renderLearningPlanNotifications(res.data.innerMessages);
+                    } else {
+                        alert("数据获取失败，原因：" + res.msg);
+                    }
+                }
+            });
+
+
+        });
+
+        function toInnerMessage() {
+            window.location.replace("./message.html");
+        }
+    </script>
+</body>
+
+</html>
